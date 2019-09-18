@@ -1,3 +1,6 @@
-// topicsRouter.delete('/:parametricEndpoint', () => {
-//     put yourcode here
-// })
+const topicsRouter = require("express").Router();
+const { getAllTopics } = require("../controllers/topics-controller");
+
+topicsRouter.route("/").get(getAllTopics);
+
+module.exports = topicsRouter;

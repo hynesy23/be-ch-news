@@ -261,16 +261,6 @@ describe.only("formatComments", () => {
     const objRef = { "UNCOVERED: catspiracy to bring down democracy": 35 };
     const actualResult = formatComments(input, objRef);
     const dateVariable = new Date(1101386163389);
-    console.log(actualResult[0].created_at);
     expect(dateVariable).to.eql(actualResult[0].created_at);
   });
 });
-
-// const keyToChange = "created_at";
-// const actualResult = formatDates(input, keyToChange);
-// const dateVariable1 = new Date(1542284514171);
-// const dateVariable2 = new Date(1416140514171);
-// const dateVariable3 = new Date(1037708514171);
-// expect(dateVariable1).to.eql(actualResult[0].created_at);
-// expect(dateVariable2).to.eql(actualResult[1].created_at);
-// expect(dateVariable3).to.eql(actualResult[2].created_at);

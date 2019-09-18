@@ -3,7 +3,6 @@ exports.formatDates = (list, property) => {
     const { ...newElement } = element;
     newElement[property] = new Date(newElement[property]);
     newElement.created_at = new Date(newElement.created_at);
-    console.log(newElement);
     return newElement;
   });
 };
@@ -12,7 +11,6 @@ exports.makeRefObj = (list, newKey, newValue) => {
   const newRefObj = {};
   list.forEach(element => {
     newRefObj[element[newKey]] = element[newValue];
-    console.log(newRefObj, "new ref object");
   });
   return newRefObj;
 };

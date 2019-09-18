@@ -1,7 +1,9 @@
-const topicsRouter = require("express").Router();
+const { fetchAllTopics } = require("../models/topics-model");
 
-exports.getAllTopics = () => {
-  console.log("hola amigo what took you so long!");
+exports.getAllTopics = (req, res, then) => {
+  fetchAllTopics()
+    .then(topics => {
+      res.status(200).json({ topics: topics });
+    })
+    .catch(err => next(err));
 };
-
-exports.deleteSomethingOrOTher = () => (module.exports = topicsRouter);
