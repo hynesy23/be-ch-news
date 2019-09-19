@@ -1,8 +1,12 @@
 process.env.NODE_ENV = "test";
+const chai = require("chai");
 const { expect } = require("chai");
 const request = require("supertest");
 const app = require("../app");
 const connection = require("../connection");
+const chaiSorted = require("chai-sorted");
+
+chai.use(chaiSorted);
 
 describe("/api", () => {
   beforeEach(() => {
@@ -76,6 +80,37 @@ describe("/api", () => {
           );
         });
     });
+    it("GET: 200, articles should be sorted by date by default", () => {
+      const sort_by = "created_at";
+      return request(app)
+        .get(`/api/articles`)
+        .expect(200)
+        .then(({ body }) => {
+          console.log(body, "LOG OF BODY FROM TEST");
+          expect(body.articles).to.be.descendingBy("created_at");
+        });
+    });
+    it("GET: 200, articles should accept query to be sorted by", () => {
+      const sort_by = "author";
+      return request(app)
+        .get(`/api/articles?sorted_by=${sort_by}`)
+        .expect(200)
+        .then(({ body }) => {
+          console.log(body, "LOG OF BODY FROM TEST");
+          expect(body.articles).to.be.descendingBy("author");
+        });
+    });
+    it.only("GET: 200, articles should accept an order to be ordered by", () => {
+      const sort_by = "author";
+      const order_by = "asc";
+      return request(app)
+        .get(`/api/articles?sorted_by=${sort_by}&ordered_by=${order_by}`)
+        .expect(200)
+        .then(({ body }) => {
+          console.log(body, "LOG OF BODY FROM TEST");
+          expect(body.articles).to.be.ascendingBy("author");
+        });
+    });
     it("GET: 200, comment_count value should be a number", () => {
       const article_id = 2;
       return request(app)
@@ -91,7 +126,7 @@ describe("/api", () => {
         .get(`/api/articles/${article_id}`)
         .expect(400)
         .then(({ body }) => {
-          expect(body).to.equal("Invalid type of input");
+          expect(body.msg).to.equal("Invalid type of input");
         });
     });
     it("GET 404: return error message when article_id does not exist", () => {
@@ -149,10 +184,10 @@ describe("/api", () => {
         .send(patchBody)
         .expect(400)
         .then(({ body }) => {
-          expect(body).to.equal("Invalid type of input");
+          expect(body.msg).to.equal("Invalid type of input");
         });
     });
-    xit("PATCH: 200, returns article when patchBody is missing required fields", () => {
+    it("PATCH: 200, returns article when patchBody is missing required fields", () => {
       const patchBody = {};
       const article_id = 2;
       return request(app)
@@ -179,7 +214,7 @@ describe("/api", () => {
         .send(patchBody)
         .expect(400)
         .then(({ body }) => {
-          expect(body).to.equal("Invalid type of input");
+          expect(body.msg).to.equal("Invalid type of input");
         });
     });
     it("PATCH 404, returns error message when article_id does not exist", () => {
@@ -211,7 +246,7 @@ describe("/api", () => {
           expect(body.comment.body).to.equal("Yes, I also believe that");
         });
     });
-    it("PATCH 404, returns error message when article_id does not exist", () => {
+    it("POST 404, returns error message when article_id does not exist", () => {
       const article_id = 9999;
       const postBody = {
         username: "rogersop",
@@ -222,7 +257,145 @@ describe("/api", () => {
         .send(postBody)
         .expect(404)
         .then(({ body }) => {
-          expect(body.msg).to.equal("No article found for id: 9999");
+          expect(body.msg).to.equal(
+            'Key (article_id)=(9999) is not present in table "articles".'
+          );
+        });
+    });
+    it("POST: 400, returns error message when article_id is invalid", () => {
+      const article_id = "badarticleID";
+      const postBody = {
+        username: "rogersop",
+        body: "Yes, I also believe that"
+      };
+      return request(app)
+        .post(`/api/articles/${article_id}/comments`)
+        .send(postBody)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal("Invalid type of input");
+        });
+    });
+    it("POST: 404, returns error when postBody includes an author (username) that does not exist", () => {
+      const article_id = 2;
+      const postBody = {
+        username: "Sir Funkalot",
+        body: "Yes, I also believe that"
+      };
+      return request(app)
+        .post(`/api/articles/${article_id}/comments`)
+        .send(postBody)
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(
+            'Key (author)=(Sir Funkalot) is not present in table "users".'
+          );
+        });
+    });
+    it("POST: 400, returns error when postBody includes an author (username) that does not exist", () => {
+      const article_id = 2;
+      const postBody = {
+        username: "rogersop",
+        body: "Yes, I also believe that",
+        colour: "green"
+      };
+      return request(app)
+        .post(`/api/articles/${article_id}/comments`)
+        .send(postBody)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(
+            "You have tried to use a column that doesn't exists"
+          );
+        });
+    });
+    it("GET: 200, returns array of comment objects based on given article_id", () => {
+      const article_id = 1;
+      return request(app)
+        .get(`/api/articles/${article_id}/comments`)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments[0]).to.contain.keys(
+            "author",
+            "comments_id",
+            "body",
+            "created_at",
+            "votes",
+            "article_id"
+          );
+          expect(body.comments[0].article_id).to.equal(1);
+        });
+    });
+    it("GET: 200, returns empty array when there are no comments for given article_id", () => {
+      const article_id = 2;
+      return request(app)
+        .get(`/api/articles/${article_id}/comments`)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments).to.eql([]);
+        });
+    });
+    it("GET: 404, returns error message when article_id is not recognised", () => {
+      const article_id = 9999;
+      return request(app)
+        .get(`/api/articles/${article_id}/comments`)
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).to.equal(`No articles found for id: ${article_id}`);
+        });
+    });
+    it("GET: 400, returns error message when article_id is invalid", () => {
+      const article_id = "iamanotanarticleID";
+      return request(app)
+        .get(`/api/articles/${article_id}/comments`)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.equal("Invalid type of input");
+        });
+    });
+    it("GET: 200, comments will be sorted by 'created_at' column by default, in descending order by default", () => {
+      const article_id = 1;
+      return request(app)
+        .get(`/api/articles/${article_id}/comments`)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments).to.be.descendingBy("created_at");
+        });
+    });
+    it("GET: 200, comments will accept a query column to be sorted by", () => {
+      const article_id = 1;
+      const sort_by = "votes";
+      return request(app)
+        .get(`/api/articles/${article_id}/comments?sorted_by=${sort_by}`)
+        .expect(200)
+        .then(({ body }) => {
+          console.log(body.comments, "BODY.COMMENTS LOG FORM TEST");
+          expect(body.comments).to.be.descendingBy("votes");
+        });
+    });
+    it("Will accept order query which can be set to 'asc' or 'desc'. Given column will then be ordered by this", () => {
+      const article_id = 1;
+      const sort_by = "votes";
+      const order_by = "asc";
+      return request(app)
+        .get(
+          `/api/articles/${article_id}/comments?sorted_by=${sort_by}&ordered_by=${order_by}`
+        )
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments).to.be.ascendingBy("votes");
+        });
+    });
+    it("GET: 404, returns error when 'sort_by' column does not exist", () => {
+      const article_id = 1;
+      const sort_by = "colour";
+      return request(app)
+        .get(`/api/articles/${article_id}/comments?sorted_by=${sort_by}`)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).to.eql(
+            "You have tried to use a column that doesn't exists"
+          );
         });
     });
   });

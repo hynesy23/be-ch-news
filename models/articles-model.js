@@ -1,5 +1,11 @@
 const connection = require("../connection");
 
+exports.fetchAllArticles = (sorted_by, ordered_by) => {
+  return connection("articles")
+    .select("*")
+    .orderBy(sorted_by || "created_at", ordered_by || "desc");
+};
+
 exports.fecthArticleById = article_id => {
   return connection
     .select("articles.*")
