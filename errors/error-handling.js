@@ -1,3 +1,10 @@
+exports.send405Error = (req, res, next) => {
+  res.status(405).send({
+    msg:
+      "Unfortunately, dear fellow, you can't use this method on this endpoint"
+  });
+};
+
 exports.handleCustomErrors = (err, req, res, next) => {
   console.log(err, "ERR FROM CUSTOM ERROR");
   if (err.status) res.status(err.status).send({ msg: err.msg });
@@ -22,7 +29,6 @@ exports.handlePsqlErrors = (err, req, res, next) => {
   const status = psqlRef[err.code].status;
   const psqlErrors = ["22P02", "23503", "42703"];
   if (psqlErrors.includes(err.code)) {
-    console.log(err.detail, "log of error message");
     res.status(status).json({ msg: msg });
   } else next(err);
 };

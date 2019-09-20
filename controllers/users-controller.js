@@ -6,5 +6,5 @@ exports.getUserByUsername = (req, res, next) => {
     .then(user => {
       res.status(200).json({ username: user });
     })
-    .catch(err => next(err));
+    .catch(next);
 };

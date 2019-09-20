@@ -12,6 +12,13 @@ exports.fetchAllArticles = (sorted_by, ordered_by, author, topic) => {
       if (topic) queryBuilder.where({ topic });
     })
     .then(articles => {
+      if (!articles.length && topic && author) {
+        return Promise.all([
+          articles,
+          doesTopicExist(topic),
+          doesAuthorExist(author)
+        ]);
+      }
       if (!articles.length && topic) {
         return Promise.all([articles, doesTopicExist(topic)]);
       }
@@ -22,7 +29,6 @@ exports.fetchAllArticles = (sorted_by, ordered_by, author, topic) => {
       return [articles];
     })
     .then(([articles]) => {
-      console.log(articles, "LOG OF ARTICLE FROM MODEL");
       return articles;
     });
 };

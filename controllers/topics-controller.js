@@ -1,9 +1,10 @@
 const { fetchAllTopics } = require("../models/topics-model");
 
-exports.getAllTopics = (req, res, then) => {
+exports.getAllTopics = (req, res, next) => {
+  console.log("HELLLOOO");
   fetchAllTopics()
     .then(topics => {
       res.status(200).json({ topics: topics });
     })
-    .catch(err => next(err));
+    .catch(next);
 };

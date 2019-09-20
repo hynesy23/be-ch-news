@@ -15,16 +15,19 @@ describe("/api", () => {
   after(() => {
     return connection.destroy();
   });
-  describe("/topics", () => {
+  describe.only("/topics", () => {
     describe("GET", () => {
       it("status: 200. Should return array of all topic objects", () => {
-        return request(app)
-          .get("/api/topics")
-          .expect(200)
-          .then(({ body }) => {
-            expect(body.topics).to.be.an("array");
-            expect(body.topics[0]).to.contain.keys("slug", "description");
-          });
+        return (
+          request(app)
+            .get("/api/topics")
+            //.expect(200)
+            .then(({ body }) => {
+              //console.log("HELLO FROM TEST");
+              expect(body.topics).to.be.an("array");
+              expect(body.topics[0]).to.contain.keys("slug", "description");
+            })
+        );
       });
       it("status: 404 Returns error message for a route that is not valid", () => {
         return request(app)
@@ -35,6 +38,22 @@ describe("/api", () => {
               "This is not a valid route. Please try again"
             );
           });
+      });
+    });
+    describe("INVALID METHODS", () => {
+      it("status: 405", () => {
+        const invalidMethods = ["patch", "post", "delete"];
+        const methodPromises = invalidMethods.map(method => {
+          return request(app)
+            [method]("/api/topics")
+            .expect(405)
+            .then(({ body: { msg } }) => {
+              expect(msg).to.equal(
+                "Unfortunately, dear fellow, you can't use this method on this endpoint"
+              );
+            });
+        });
+        return Promise.all(methodPromises);
       });
     });
   });
@@ -61,6 +80,23 @@ describe("/api", () => {
           .then(({ body }) => {
             expect(body.msg).to.equal("No user found for iamnotausername");
           });
+      });
+    });
+    describe("INVALID METHODS", () => {
+      it("status: 405", () => {
+        const invalidMethods = ["patch", "post", "delete"];
+        const methodPromises = invalidMethods.map(method => {
+          console.log(method, "METHOD LOG");
+          return request(app)
+            [method]("/api/topics")
+            .expect(405)
+            .then(({ body: { msg } }) => {
+              expect(msg).to.equal(
+                "Unfortunately, dear fellow, you can't use this method on this endpoint"
+              );
+            });
+        });
+        return Promise.all(methodPromises);
       });
     });
   });
@@ -218,6 +254,24 @@ describe("/api", () => {
             expect(body.msg).to.equal("No article found for id: 99999");
           });
       });
+      describe("INVALID METHODS", () => {
+        const article_id = 2;
+        it("status: 405", () => {
+          const invalidMethods = ["post", "delete"];
+          const methodPromises = invalidMethods.map(method => {
+            console.log(method, "METHOD LOG");
+            return request(app)
+              [method](`/api/articles/${article_id}`)
+              .expect(405)
+              .then(({ body: { msg } }) => {
+                expect(msg).to.equal(
+                  "Unfortunately, dear fellow, you can't use this method on this endpoint"
+                );
+              });
+          });
+          return Promise.all(methodPromises);
+        });
+      });
       it("status: 200, returns array of comment objects based on given article_id", () => {
         const article_id = 1;
         return request(app)
@@ -307,6 +361,24 @@ describe("/api", () => {
               "You have tried to use a column that doesn't exists"
             );
           });
+      });
+      describe("INVALID METHODS", () => {
+        const article_id = 2;
+        it("status: 405", () => {
+          const invalidMethods = ["patch", "delete"];
+          const methodPromises = invalidMethods.map(method => {
+            console.log(method, "METHOD LOG");
+            return request(app)
+              [method](`/api/articles/${article_id}/comments`)
+              .expect(405)
+              .then(({ body: { msg } }) => {
+                expect(msg).to.equal(
+                  "Unfortunately, dear fellow, you can't use this method on this endpoint"
+                );
+              });
+          });
+          return Promise.all(methodPromises);
+        });
       });
     });
 
@@ -566,6 +638,23 @@ describe("/api", () => {
               "No such comment. There was nothing to delete..."
             );
           });
+      });
+    });
+    describe("INVALID METHODS", () => {
+      it("status: 405", () => {
+        const comments_id = 2;
+        const invalidMethods = ["post", "get"];
+        const methodPromises = invalidMethods.map(method => {
+          return request(app)
+            [method](`/api/comments/${comments_id}`)
+            .expect(405)
+            .then(({ body: { msg } }) => {
+              expect(msg).to.equal(
+                "Unfortunately, dear fellow, you can't use this method on this endpoint"
+              );
+            });
+        });
+        return Promise.all(methodPromises);
       });
     });
   });

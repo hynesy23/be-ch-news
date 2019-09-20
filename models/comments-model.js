@@ -21,25 +21,20 @@ exports.insertACommentByArticleId = (comment, article_id) => {
 };
 
 exports.fetchCommentByArticleId = (article_id, sorted_by, ordered_by) => {
-  return (
-    connection("comments")
-      .select("*")
-      // .modify(queryBuilder => {
-      //   if (article_id) queryBuilder.where({ article_id });
-      // })
-      .where({ article_id })
-      .orderBy(sorted_by || "created_at", ordered_by || "desc")
-      .then(comments => {
-        if (!comments.length && article_id) {
-          return Promise.all([comments, checkIfArticleExists(article_id)]);
-        }
+  return connection("comments")
+    .select("*")
+    .where({ article_id })
+    .orderBy(sorted_by || "created_at", ordered_by || "desc")
+    .then(comments => {
+      if (!comments.length && article_id) {
+        return Promise.all([comments, checkIfArticleExists(article_id)]);
+      }
 
-        return [comments];
-      })
-      .then(([comments]) => {
-        return comments;
-      })
-  );
+      return [comments];
+    })
+    .then(([comments]) => {
+      return comments;
+    });
 };
 
 const checkIfArticleExists = article_id => {
@@ -57,7 +52,6 @@ const checkIfArticleExists = article_id => {
 };
 
 exports.updateACommentById = (comments_id, inc_votes) => {
-  console.log(inc_votes);
   return connection("comments")
     .where({ comments_id })
     .increment("votes", inc_votes)

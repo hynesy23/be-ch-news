@@ -26,7 +26,7 @@ exports.getArticleById = (req, res, next) => {
     .then(article => {
       res.status(200).json({ article: article });
     })
-    .catch(err => next(err));
+    .catch(next);
 };
 
 exports.patchAnArticleById = (req, res, next) => {
@@ -36,7 +36,7 @@ exports.patchAnArticleById = (req, res, next) => {
     .then(article => {
       res.status(200).json({ article: article });
     })
-    .catch(err => next(err));
+    .catch(next);
 };
 
 exports.postACommentByArticleId = (req, res, next) => {
@@ -46,7 +46,7 @@ exports.postACommentByArticleId = (req, res, next) => {
     .then(comment => {
       res.status(201).json({ comment: comment });
     })
-    .catch(err => next(err));
+    .catch(next);
 };
 
 exports.getCommentByArticleId = (req, res, next) => {
@@ -57,5 +57,5 @@ exports.getCommentByArticleId = (req, res, next) => {
     .then(comments => {
       res.status(200).json({ comments: comments });
     })
-    .catch(err => next(err));
+    .catch(next);
 };
