@@ -11,10 +11,13 @@ const {
 exports.getAllArticles = (req, res, next) => {
   const { sorted_by } = req.query;
   const { ordered_by } = req.query;
-  fetchAllArticles(sorted_by, ordered_by).then(articles => {
-    console.log(articles, "ARTICLES LOG FROM CONTROLLER");
-    res.status(200).json({ articles: articles });
-  });
+  const { author } = req.query;
+  const { topic } = req.query;
+  fetchAllArticles(sorted_by, ordered_by, author, topic)
+    .then(articles => {
+      res.status(200).json({ articles: articles });
+    })
+    .catch(next);
 };
 
 exports.getArticleById = (req, res, next) => {

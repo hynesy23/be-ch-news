@@ -47,12 +47,33 @@ const checkIfArticleExists = article_id => {
     .select("*")
     .where({ article_id })
     .then(articles => {
-      console.log({ articles });
       if (!articles.length)
         return Promise.reject({
           status: 404,
           msg: `No articles found for id: ${article_id}`
         });
       return true;
+    });
+};
+
+exports.updateACommentById = (comments_id, inc_votes) => {
+  console.log(inc_votes);
+  return connection("comments")
+    .where({ comments_id })
+    .increment("votes", inc_votes)
+    .returning("*");
+};
+
+exports.removeCommentById = comments_id => {
+  return connection("comments")
+    .where({ comments_id })
+    .del()
+    .then(delete_Count => {
+      if (!delete_Count) {
+        return Promise.reject({
+          status: 404,
+          msg: "No such comment. There was nothing to delete..."
+        });
+      }
     });
 };
