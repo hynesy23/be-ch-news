@@ -257,7 +257,7 @@ describe("/api", () => {
             expect(body.msg).to.equal("Invalid type of input");
           });
       });
-      it("status 404: return error message when article_id does not exist", () => {
+      it("status: 404 return error message when article_id does not exist", () => {
         const article_id = 99999;
         return request(app)
           .get(`/api/articles/${article_id}`)
@@ -472,7 +472,7 @@ describe("/api", () => {
             expect(body.msg).to.equal("Invalid type of input");
           });
       });
-      it("status 404, returns error message when article_id does not exist", () => {
+      it("status: 404, returns error message when article_id does not exist", () => {
         const patchBody = {};
         const article_id = 9999;
         return request(app)
@@ -569,7 +569,7 @@ describe("/api", () => {
       it("status: 400, returns error when attempt to send body missing key(s)", () => {
         const article_id = 2;
         const postBody = {
-          username: "rogersop"
+          body: "I am a body"
         };
         return request(app)
           .post(`/api/articles/${article_id}/comments`)
@@ -593,7 +593,7 @@ describe("/api", () => {
           .send(patchBody)
           .expect(200)
           .then(({ body }) => {
-            expect(body.comment[0]).to.contain.keys(
+            expect(body.comment).to.contain.keys(
               "comment_id",
               "author",
               "article_id",
@@ -601,7 +601,7 @@ describe("/api", () => {
               "created_at",
               "body"
             );
-            expect(body.comment[0].votes).to.equal(24);
+            expect(body.comment.votes).to.equal(24);
           });
       });
       it("status: 400, returns error message when patchBody includes incorrect type", () => {
@@ -623,7 +623,7 @@ describe("/api", () => {
           .send(patchBody)
           .expect(200)
           .then(({ body }) => {
-            expect(body.comment[0]).to.contain.keys(
+            expect(body.comment).to.contain.keys(
               "comment_id",
               "author",
               "article_id",
@@ -631,7 +631,7 @@ describe("/api", () => {
               "created_at",
               "body"
             );
-            expect(body.comment[0].comment_id).to.equal(2);
+            expect(body.comment.comment_id).to.equal(2);
           });
       });
       it("status: 400, return error message when comment_id is invalid", () => {
@@ -652,9 +652,9 @@ describe("/api", () => {
       return request(app)
         .patch(`/api/comments/${comment_id}`)
         .send(patchBody)
-        .expect(200)
+        .expect(404)
         .then(({ body }) => {
-          expect(body.comment).to.eql([]);
+          expect(body.msg).to.equal("I'm sorry, comment does not exist");
         });
     });
     describe("DELETE", () => {
@@ -695,12 +695,11 @@ describe("/api", () => {
     });
   });
   describe("GET", () => {
-    it.only("status: 200, request to /api responds with JSON describing all available endpoints on API", () => {
+    it("status: 200, request to /api responds with JSON describing all available endpoints on API", () => {
       return request(app)
         .get("/api")
         .expect(200)
         .then(({ body }) => {
-          console.log(body, "BODY LOG FROM TEST");
           expect(body.endpoints).to.contain.keys(
             "GET /api",
             "GET /api/topics",

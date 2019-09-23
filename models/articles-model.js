@@ -85,7 +85,7 @@ exports.updateAnArticleById = (article_id, update) => {
   const { inc_votes } = update;
   return connection("articles")
     .where({ article_id })
-    .increment("votes", inc_votes)
+    .increment("votes", inc_votes || 0)
     .returning("*")
     .then(([article]) => {
       if (!article) {

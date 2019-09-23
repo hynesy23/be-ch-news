@@ -54,11 +54,16 @@ const checkIfArticleExists = article_id => {
 exports.updateACommentById = (comment_id, inc_votes) => {
   return connection("comments")
     .where({ comment_id })
-    .increment("votes", inc_votes)
-    .returning("*");
-  // .then(comment => {
-  //   if (!comment.length) return
-  // });
+    .increment("votes", inc_votes || 0)
+    .returning("*")
+    .then(([comment]) => {
+      if (!comment)
+        return Promise.reject({
+          status: 404,
+          msg: "I'm sorry, comment does not exist"
+        });
+      return comment;
+    });
 };
 
 exports.removeCommentById = comment_id => {
