@@ -6,13 +6,13 @@ exports.send405Error = (req, res, next) => {
 };
 
 exports.handleCustomErrors = (err, req, res, next) => {
-  console.log(err, "ERR FROM CUSTOM ERROR");
+  console.log(err, "err from custom");
   if (err.status) res.status(err.status).send({ msg: err.msg });
   else next(err);
 };
 
 exports.handlePsqlErrors = (err, req, res, next) => {
-  console.log(err.code, "ERR FROM PSQL ERROR");
+  console.log(err, "err from psql");
 
   const psqlRef = {
     "22P02": { status: 400, msg: "Invalid type of input" },
@@ -23,11 +23,15 @@ exports.handlePsqlErrors = (err, req, res, next) => {
     "42703": {
       status: 400,
       msg: "You have tried to use a column that doesn't exists"
+    },
+    "23502": {
+      status: 400,
+      msg: "You have missed a key name in your POST body"
     }
   };
   const msg = psqlRef[err.code].msg;
   const status = psqlRef[err.code].status;
-  const psqlErrors = ["22P02", "23503", "42703"];
+  const psqlErrors = ["22P02", "23503", "42703", "23502"];
   if (psqlErrors.includes(err.code)) {
     res.status(status).json({ msg: msg });
   } else next(err);

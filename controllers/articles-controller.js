@@ -9,11 +9,11 @@ const {
 } = require("../models/comments-model");
 
 exports.getAllArticles = (req, res, next) => {
-  const { sorted_by } = req.query;
-  const { ordered_by } = req.query;
+  const { sort_by } = req.query;
+  const { order } = req.query;
   const { author } = req.query;
   const { topic } = req.query;
-  fetchAllArticles(sorted_by, ordered_by, author, topic)
+  fetchAllArticles(sort_by, order, author, topic)
     .then(articles => {
       res.status(200).json({ articles: articles });
     })
@@ -51,9 +51,9 @@ exports.postACommentByArticleId = (req, res, next) => {
 
 exports.getCommentByArticleId = (req, res, next) => {
   const { article_id } = req.params;
-  const { sorted_by } = req.query;
-  const { ordered_by } = req.query;
-  fetchCommentByArticleId(article_id, sorted_by, ordered_by)
+  const { sort_by } = req.query;
+  const { order } = req.query;
+  fetchCommentByArticleId(article_id, sort_by, order)
     .then(comments => {
       res.status(200).json({ comments: comments });
     })

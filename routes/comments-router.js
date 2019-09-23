@@ -6,7 +6,7 @@ const {
 const { send405Error } = require("../errors/error-handling");
 
 commentsRouter
-  .route("/:comments_id")
+  .route("/:comment_id")
   .patch(patchAComment)
   .delete(deleteCommentById)
   .all(send405Error);

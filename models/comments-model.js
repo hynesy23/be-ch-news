@@ -20,11 +20,11 @@ exports.insertACommentByArticleId = (comment, article_id) => {
     });
 };
 
-exports.fetchCommentByArticleId = (article_id, sorted_by, ordered_by) => {
+exports.fetchCommentByArticleId = (article_id, sort_by, order) => {
   return connection("comments")
     .select("*")
     .where({ article_id })
-    .orderBy(sorted_by || "created_at", ordered_by || "desc")
+    .orderBy(sort_by || "created_at", order || "desc")
     .then(comments => {
       if (!comments.length && article_id) {
         return Promise.all([comments, checkIfArticleExists(article_id)]);
@@ -51,16 +51,19 @@ const checkIfArticleExists = article_id => {
     });
 };
 
-exports.updateACommentById = (comments_id, inc_votes) => {
+exports.updateACommentById = (comment_id, inc_votes) => {
   return connection("comments")
-    .where({ comments_id })
+    .where({ comment_id })
     .increment("votes", inc_votes)
     .returning("*");
+  // .then(comment => {
+  //   if (!comment.length) return
+  // });
 };
 
-exports.removeCommentById = comments_id => {
+exports.removeCommentById = comment_id => {
   return connection("comments")
-    .where({ comments_id })
+    .where({ comment_id })
     .del()
     .then(delete_Count => {
       if (!delete_Count) {

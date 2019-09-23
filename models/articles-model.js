@@ -1,12 +1,12 @@
 const connection = require("../connection");
 
-exports.fetchAllArticles = (sorted_by, ordered_by, author, topic) => {
+exports.fetchAllArticles = (sort_by, order, author, topic) => {
   return connection("articles")
     .select("articles.*")
     .leftJoin("comments", "articles.article_id", "comments.article_id")
-    .count("comments.comments_id AS comment_count")
+    .count("comments.comment_id AS comment_count")
     .groupBy("articles.article_id")
-    .orderBy(sorted_by || "created_at", ordered_by || "desc")
+    .orderBy(sort_by || "created_at", order || "desc")
     .modify(queryBuilder => {
       if (author) queryBuilder.where({ "articles.author": author });
       if (topic) queryBuilder.where({ topic });
@@ -67,7 +67,7 @@ exports.fecthArticleById = article_id => {
     .from("articles")
     .where({ "articles.article_id": article_id })
     .leftJoin("comments", "articles.article_id", "comments.article_id")
-    .count("comments.comments_id AS comment_count")
+    .count("comments.comment_id AS comment_count")
     .groupBy("articles.article_id")
     .then(([article]) => {
       if (!article) {
@@ -94,6 +94,6 @@ exports.updateAnArticleById = (article_id, update) => {
           msg: `No article found for id: ${article_id}`
         });
       }
-      return [article];
+      return article;
     });
 };

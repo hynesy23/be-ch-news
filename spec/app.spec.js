@@ -15,19 +15,16 @@ describe("/api", () => {
   after(() => {
     return connection.destroy();
   });
-  describe.only("/topics", () => {
+  describe("/topics", () => {
     describe("GET", () => {
       it("status: 200. Should return array of all topic objects", () => {
-        return (
-          request(app)
-            .get("/api/topics")
-            //.expect(200)
-            .then(({ body }) => {
-              //console.log("HELLO FROM TEST");
-              expect(body.topics).to.be.an("array");
-              expect(body.topics[0]).to.contain.keys("slug", "description");
-            })
-        );
+        return request(app)
+          .get("/api/topics")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.topics).to.be.an("array");
+            expect(body.topics[0]).to.contain.keys("slug", "description");
+          });
       });
       it("status: 404 Returns error message for a route that is not valid", () => {
         return request(app)
@@ -64,12 +61,8 @@ describe("/api", () => {
           .get("/api/users/rogersop")
           .expect(200)
           .then(({ body }) => {
-            expect(body.username).to.be.an("object");
-            expect(body.username).to.contain.keys(
-              "username",
-              "avatar_url",
-              "name"
-            );
+            expect(body.user).to.be.an("object");
+            expect(body.user).to.contain.keys("username", "avatar_url", "name");
           });
       });
       it("status: 404, return error message when username entered is invalid", () => {
@@ -86,7 +79,6 @@ describe("/api", () => {
       it("status: 405", () => {
         const invalidMethods = ["patch", "post", "delete"];
         const methodPromises = invalidMethods.map(method => {
-          console.log(method, "METHOD LOG");
           return request(app)
             [method]("/api/topics")
             .expect(405)
@@ -144,13 +136,13 @@ describe("/api", () => {
           .get(`/api/articles`)
           .expect(200)
           .then(({ body }) => {
-            expect(body.articles).to.be.descendingBy("created_at");
+            expect(body.articles).to.be.descendingBy(sort_by);
           });
       });
       it("status: 200, articles should accept query to be sorted by", () => {
         const sort_by = "author";
         return request(app)
-          .get(`/api/articles?sorted_by=${sort_by}`)
+          .get(`/api/articles?sort_by=${sort_by}`)
           .expect(200)
           .then(({ body }) => {
             expect(body.articles).to.be.descendingBy("author");
@@ -159,7 +151,7 @@ describe("/api", () => {
       it("status: 400, returns error when attempt made to sort by column that does not exist", () => {
         const sort_by = "colour";
         return request(app)
-          .get(`/api/articles?sorted_by=${sort_by}`)
+          .get(`/api/articles?sort_by=${sort_by}`)
           .expect(400)
           .then(({ body }) => {
             expect(body.msg).to.equal(
@@ -169,9 +161,9 @@ describe("/api", () => {
       });
       it("status: 200, articles should accept an order to be ordered by", () => {
         const sort_by = "author";
-        const order_by = "asc";
+        const order = "asc";
         return request(app)
-          .get(`/api/articles?sorted_by=${sort_by}&ordered_by=${order_by}`)
+          .get(`/api/articles?sort_by=${sort_by}&order=${order}`)
           .expect(200)
           .then(({ body }) => {
             expect(body.articles).to.be.ascendingBy("author");
@@ -227,6 +219,26 @@ describe("/api", () => {
             expect(body.msg).to.equal("I'm sorry, no such topic exists");
           });
       });
+      it("status: 404, returns error when attempt to filter by author that exists but topic that does not", () => {
+        const topic = "mitch";
+        const author = "Sir Funkalot";
+        return request(app)
+          .get(`/api/articles?topic=${topic}&author=${author}`)
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("I'm sorry, no such author exists");
+          });
+      });
+      it("status: 404, returns error when attempt to filter by topic that exists but author that does not", () => {
+        const topic = "Fine cuisine";
+        const author = "rogersop";
+        return request(app)
+          .get(`/api/articles?topic=${topic}&author=${author}`)
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("I'm sorry, no such topic exists");
+          });
+      });
       it("status: 200, comment_count value should be a number", () => {
         const article_id = 2;
         return request(app)
@@ -259,7 +271,6 @@ describe("/api", () => {
         it("status: 405", () => {
           const invalidMethods = ["post", "delete"];
           const methodPromises = invalidMethods.map(method => {
-            console.log(method, "METHOD LOG");
             return request(app)
               [method](`/api/articles/${article_id}`)
               .expect(405)
@@ -280,7 +291,7 @@ describe("/api", () => {
           .then(({ body }) => {
             expect(body.comments[0]).to.contain.keys(
               "author",
-              "comments_id",
+              "comment_id",
               "body",
               "created_at",
               "votes",
@@ -331,7 +342,7 @@ describe("/api", () => {
         const article_id = 1;
         const sort_by = "votes";
         return request(app)
-          .get(`/api/articles/${article_id}/comments?sorted_by=${sort_by}`)
+          .get(`/api/articles/${article_id}/comments?sort_by=${sort_by}`)
           .expect(200)
           .then(({ body }) => {
             expect(body.comments).to.be.descendingBy("votes");
@@ -340,10 +351,10 @@ describe("/api", () => {
       it("status: 200, will accept order query which can be set to 'asc' or 'desc'. Given column will then be ordered by this", () => {
         const article_id = 1;
         const sort_by = "votes";
-        const order_by = "asc";
+        const order = "asc";
         return request(app)
           .get(
-            `/api/articles/${article_id}/comments?sorted_by=${sort_by}&ordered_by=${order_by}`
+            `/api/articles/${article_id}/comments?sort_by=${sort_by}&order=${order}`
           )
           .expect(200)
           .then(({ body }) => {
@@ -354,7 +365,7 @@ describe("/api", () => {
         const article_id = 1;
         const sort_by = "colour";
         return request(app)
-          .get(`/api/articles/${article_id}/comments?sorted_by=${sort_by}`)
+          .get(`/api/articles/${article_id}/comments?sort_by=${sort_by}`)
           .expect(400)
           .then(({ body }) => {
             expect(body.msg).to.eql(
@@ -367,7 +378,6 @@ describe("/api", () => {
         it("status: 405", () => {
           const invalidMethods = ["patch", "delete"];
           const methodPromises = invalidMethods.map(method => {
-            console.log(method, "METHOD LOG");
             return request(app)
               [method](`/api/articles/${article_id}/comments`)
               .expect(405)
@@ -391,7 +401,7 @@ describe("/api", () => {
           .send(patchBody)
           .expect(200)
           .then(({ body }) => {
-            expect(body.article[0]).to.contain.keys(
+            expect(body.article).to.contain.keys(
               "article_id",
               "title",
               "body",
@@ -400,7 +410,7 @@ describe("/api", () => {
               "author",
               "created_at"
             );
-            expect(body.article[0].votes).to.equal(10);
+            expect(body.article.votes).to.equal(10);
             patchBody = { inc_votes: -10 };
             const article_id = 2;
             return request(app)
@@ -408,7 +418,7 @@ describe("/api", () => {
               .send(patchBody)
               .expect(200)
               .then(({ body }) => {
-                expect(body.article[0]).to.contain.keys(
+                expect(body.article).to.contain.keys(
                   "article_id",
                   "title",
                   "body",
@@ -417,7 +427,7 @@ describe("/api", () => {
                   "author",
                   "created_at"
                 );
-                expect(body.article[0].votes).to.equal(0);
+                expect(body.article.votes).to.equal(0);
               });
           });
       });
@@ -440,7 +450,7 @@ describe("/api", () => {
           .send(patchBody)
           .expect(200)
           .then(({ body }) => {
-            expect(body.article[0]).to.contain.keys(
+            expect(body.article).to.contain.keys(
               "article_id",
               "title",
               "body",
@@ -486,7 +496,7 @@ describe("/api", () => {
           .send(postBody)
           .expect(201)
           .then(({ body }) => {
-            expect(body.comment.comments_id).to.equal(19);
+            expect(body.comment.comment_id).to.equal(19);
             expect(body.comment.author).to.equal("rogersop");
             expect(body.comment.article_id).to.equal(2);
             expect(body.comment.votes).to.equal(0);
@@ -539,7 +549,7 @@ describe("/api", () => {
             );
           });
       });
-      it("status: 400, returns error when postBody includes an author (username) that does not exist", () => {
+      it("status: 400, returns error attempt to add a key that does not exist", () => {
         const article_id = 2;
         const postBody = {
           username: "rogersop",
@@ -556,34 +566,49 @@ describe("/api", () => {
             );
           });
       });
+      it("status: 400, returns error when attempt to send body missing key(s)", () => {
+        const article_id = 2;
+        const postBody = {
+          username: "rogersop"
+        };
+        return request(app)
+          .post(`/api/articles/${article_id}/comments`)
+          .send(postBody)
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal(
+              "You have missed a key name in your POST body"
+            );
+          });
+      });
     });
   });
   describe("/comments", () => {
     describe("PATCH", () => {
       it("status: 200, returns the newly amended object", () => {
-        const comments_id = 2;
+        const comment_id = 2;
         const patchBody = { inc_votes: 10 };
         return request(app)
-          .patch(`/api/comments/${comments_id}`)
+          .patch(`/api/comments/${comment_id}`)
           .send(patchBody)
           .expect(200)
           .then(({ body }) => {
-            expect(body.comment).to.contain.keys(
-              "comments_id",
+            expect(body.comment[0]).to.contain.keys(
+              "comment_id",
               "author",
               "article_id",
               "votes",
               "created_at",
               "body"
             );
-            expect(body.comment.votes).to.equal(24);
+            expect(body.comment[0].votes).to.equal(24);
           });
       });
       it("status: 400, returns error message when patchBody includes incorrect type", () => {
-        const comments_id = 2;
+        const comment_id = 2;
         const patchBody = { inc_votes: "string" };
         return request(app)
-          .patch(`/api/comments/${comments_id}`)
+          .patch(`/api/comments/${comment_id}`)
           .send(patchBody)
           .expect(400)
           .then(({ body }) => {
@@ -591,29 +616,29 @@ describe("/api", () => {
           });
       });
       it("status: 200, returns article when patchBody is missing required fields", () => {
-        const comments_id = 2;
+        const comment_id = 2;
         const patchBody = {};
         return request(app)
-          .patch(`/api/comments/${comments_id}`)
+          .patch(`/api/comments/${comment_id}`)
           .send(patchBody)
           .expect(200)
           .then(({ body }) => {
-            expect(body.comment).to.contain.keys(
-              "comments_id",
+            expect(body.comment[0]).to.contain.keys(
+              "comment_id",
               "author",
               "article_id",
               "votes",
               "created_at",
               "body"
             );
-            expect(body.comment.comments_id).to.equal(2);
+            expect(body.comment[0].comment_id).to.equal(2);
           });
       });
-      it("status: 400, return error message when comments_id is invalid", () => {
-        const comments_id = "imnotacommentid";
+      it("status: 400, return error message when comment_id is invalid", () => {
+        const comment_id = "imnotacommentid";
         const patchBody = {};
         return request(app)
-          .patch(`/api/comments/${comments_id}`)
+          .patch(`/api/comments/${comment_id}`)
           .send(patchBody)
           .expect(400)
           .then(({ body }) => {
@@ -621,17 +646,28 @@ describe("/api", () => {
           });
       });
     });
+    it("status: 200, return error message if attempt is made to patch comment that doesn't exist", () => {
+      const comment_id = 99999;
+      const patchBody = { inc_votes: 10 };
+      return request(app)
+        .patch(`/api/comments/${comment_id}`)
+        .send(patchBody)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comment).to.eql([]);
+        });
+    });
     describe("DELETE", () => {
       it("status: 204, deletes comment by given 'comment_id'", () => {
-        const comments_id = 2;
+        const comment_id = 2;
         return request(app)
-          .delete(`/api/comments/${comments_id}`)
+          .delete(`/api/comments/${comment_id}`)
           .expect(204);
       });
       it("status: 404, return error message if attempt is made to delete comment that doesn't exist", () => {
-        const comments_id = 99999;
+        const comment_id = 99999;
         return request(app)
-          .delete(`/api/comments/${comments_id}`)
+          .delete(`/api/comments/${comment_id}`)
           .expect(404)
           .then(({ body }) => {
             expect(body.msg).to.equal(
@@ -642,11 +678,11 @@ describe("/api", () => {
     });
     describe("INVALID METHODS", () => {
       it("status: 405", () => {
-        const comments_id = 2;
+        const comment_id = 2;
         const invalidMethods = ["post", "get"];
         const methodPromises = invalidMethods.map(method => {
           return request(app)
-            [method](`/api/comments/${comments_id}`)
+            [method](`/api/comments/${comment_id}`)
             .expect(405)
             .then(({ body: { msg } }) => {
               expect(msg).to.equal(
@@ -656,6 +692,28 @@ describe("/api", () => {
         });
         return Promise.all(methodPromises);
       });
+    });
+  });
+  describe("GET", () => {
+    it.only("status: 200, request to /api responds with JSON describing all available endpoints on API", () => {
+      return request(app)
+        .get("/api")
+        .expect(200)
+        .then(({ body }) => {
+          console.log(body, "BODY LOG FROM TEST");
+          expect(body.endpoints).to.contain.keys(
+            "GET /api",
+            "GET /api/topics",
+            "GET /api/users/:username",
+            "GET /api/articles",
+            "GET /api/articles/:article_id",
+            "GET /api/articles/:article_id/comments",
+            "POST /api/articles/:article_id/comments",
+            "PATCH /api/articles/:article_id",
+            "PATCH /api/comments/:comment_id",
+            "DELETE /api/comments/:comment_id"
+          );
+        });
     });
   });
 });
