@@ -2,6 +2,7 @@ const articlesRouter = require("express").Router();
 const {
   getArticleById,
   getAllArticles,
+  postAnArticle,
   patchAnArticleById,
   postACommentByArticleId,
   getCommentByArticleId
@@ -11,6 +12,7 @@ const { send405Error } = require("../errors/error-handling");
 articlesRouter
   .route("")
   .get(getAllArticles)
+  .post(postAnArticle)
   .all(send405Error);
 
 articlesRouter

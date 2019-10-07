@@ -97,3 +97,12 @@ exports.updateAnArticleById = (article_id, update) => {
       return article;
     });
 };
+
+exports.insertAnArticle = article => {
+  const { ...newArticle } = article;
+  newArticle.author = newArticle.username;
+  delete newArticle.username;
+  return connection("articles")
+    .insert(newArticle)
+    .returning("*");
+};

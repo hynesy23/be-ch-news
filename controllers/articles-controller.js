@@ -1,7 +1,8 @@
 const {
+  fetchAllArticles,
   fecthArticleById,
   updateAnArticleById,
-  fetchAllArticles
+  insertAnArticle
 } = require("../models/articles-model");
 const {
   insertACommentByArticleId,
@@ -27,6 +28,13 @@ exports.getArticleById = (req, res, next) => {
       res.status(200).json({ article: article });
     })
     .catch(next);
+};
+
+exports.postAnArticle = (req, res, next) => {
+  const article = req.body;
+  insertAnArticle(article).then(([article]) => {
+    res.status(201).json({ article: article });
+  });
 };
 
 exports.patchAnArticleById = (req, res, next) => {
