@@ -74,6 +74,14 @@ describe("/api", () => {
             expect(body.msg).to.equal("No user found for iamnotausername");
           });
       });
+      it.only("status: 200, return an array of user objects", () => {
+        return request(app)
+          .get("/api/users")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.users).to.be.an('array');
+          });
+      });
     });
     describe("INVALID METHODS", () => {
       it("status: 405", () => {
@@ -267,7 +275,7 @@ describe("/api", () => {
           });
       });
       describe("POST", () => {
-        it.only("status: 201, should respond with the posted comment", () => {
+        it("status: 201, should respond with the posted comment", () => {
           const article = {
             title: "It Must Have Been Love",
             body:

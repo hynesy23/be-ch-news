@@ -15,3 +15,7 @@ exports.fetchUserByUsername = username => {
       return user;
     });
 };
+
+exports.fetchAllUsers = () => {
+  return connection("users").select("*");
+};
