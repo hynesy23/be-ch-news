@@ -37,9 +37,35 @@ describe("/api", () => {
           });
       });
     });
+    describe("POST", () => {
+      it("Status: 200, returns created topic with successful message", () => {
+        const topic = { slug: "travel", description: "Jet setting" };
+        return request(app)
+          .post("/api/topics")
+          .send(topic)
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Topic created");
+          });
+      });
+      it("Status: 400, returns error message if topic already exists", () => {
+        const topic = { slug: "travel", description: "Jet setting" };
+        return request(app)
+          .post("/api/topics")
+          .send(topic)
+          .expect(200)
+          .then(() => {
+            
+          }).then(() => {
+            return request(app).post('/api/topics').send(topic).expect(400).then(({body}) => {
+              expect(body.msg).to.equal('Key (slug)=(travel) already exists.')
+            })
+          });
+      });
+    });
     describe("INVALID METHODS", () => {
       it("status: 405", () => {
-        const invalidMethods = ["patch", "post", "delete"];
+        const invalidMethods = ["patch", "delete"];
         const methodPromises = invalidMethods.map(method => {
           return request(app)
             [method]("/api/topics")
@@ -74,18 +100,97 @@ describe("/api", () => {
             expect(body.msg).to.equal("No user found for iamnotausername");
           });
       });
-      it.only("status: 200, return an array of user objects", () => {
+      it("status: 200, return an array of user objects", () => {
         return request(app)
           .get("/api/users")
           .expect(200)
           .then(({ body }) => {
-            expect(body.users).to.be.an('array');
+            expect(body.users).to.be.an("array");
+          });
+      });
+    });
+    describe("POST", () => {
+      it("Returns status 201 and newly created user", () => {
+        const user = {
+          username: "Jimbo",
+          avatar_url:
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcSDR8KSujsmJWYMt_SBjOamoIq-G2Sm_d2nRO80rIXe9yb3jJ5h",
+          name: "Cillian"
+        };
+        return request(app)
+          .post("/api/users")
+          .send(user)
+          .expect(201)
+          .then(({ body }) => {
+            expect(body.user).to.contain.keys("username", "avatar_url", "name");
+            expect(body.user.username).to.equal("Jimbo");
+            expect(body.user.avatar_url).to.equal(
+              "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcSDR8KSujsmJWYMt_SBjOamoIq-G2Sm_d2nRO80rIXe9yb3jJ5h"
+            );
+            expect(body.user.name).to.equal("Cillian");
+          });
+      });
+      it("status: 400, returns error when attempt to send body missing key(s)", () => {
+        const user = {
+          username: "Jimbo",
+          avatar_url:
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcSDR8KSujsmJWYMt_SBjOamoIq-G2Sm_d2nRO80rIXe9yb3jJ5h"
+        };
+        return request(app)
+          .post("/api/users")
+          .send(user)
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal(
+              "You have missed a key(s) name in your POST body"
+            );
+          });
+      });
+      it("status: 400, returns error when attempt to send user body with incorrect key(s)", () => {
+        const user = {
+          username: "Jimbo",
+          picture_url:
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcSDR8KSujsmJWYMt_SBjOamoIq-G2Sm_d2nRO80rIXe9yb3jJ5h",
+          name: "Cillian"
+        };
+        return request(app)
+          .post("/api/users")
+          .send(user)
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal(
+              "You have tried to use a column that doesn't exists"
+            );
+          });
+      });
+      it("status: 400, returns error when attempt to add user with username that already exists", () => {
+        const user = {
+          username: "Jimbo",
+          avatar_url:
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcSDR8KSujsmJWYMt_SBjOamoIq-G2Sm_d2nRO80rIXe9yb3jJ5h",
+          name: "Cillian"
+        };
+        return request(app)
+          .post("/api/users")
+          .send(user)
+          .expect(201)
+          .then(() => {})
+          .then(() => {
+            return request(app)
+              .post("/api/users")
+              .send(user)
+              .expect(400)
+              .then(({ body }) => {
+                expect(body.msg).to.equal(
+                  'Key (username)=(Jimbo) already exists.'
+                );
+              });
           });
       });
     });
     describe("INVALID METHODS", () => {
       it("status: 405", () => {
-        const invalidMethods = ["patch", "post", "delete"];
+        const invalidMethods = ["patch", "delete"];
         const methodPromises = invalidMethods.map(method => {
           return request(app)
             [method]("/api/topics")
@@ -275,7 +380,7 @@ describe("/api", () => {
           });
       });
       describe("POST", () => {
-        it("status: 201, should respond with the posted comment", () => {
+        it("status: 201, should respond with the posted article", () => {
           const article = {
             title: "It Must Have Been Love",
             body:
@@ -302,7 +407,76 @@ describe("/api", () => {
               expect(body.article.title).to.equal("It Must Have Been Love");
             });
         });
-        // Need to test for invalid username, topic, bad body!!
+        it("status: 400, should respond error message if key missing in body post", () => {
+          const article = {
+            body:
+              "Only time will tell if she made the right decision. She has a type, but this time, she searched beyond that. For too long had she been a slave to habit. This time she was going to do things a little differently. She eyeballed them each, taking her time, though she had not much of that. This was not a choice to be rushed. The perfect lunchtime hinged on this. Chicken and Bacon? Nah. Tuna and Sweetcorn? Nooo thank you. Egg and Onion?? Is that a joke? No, it was none of the above. It was Ham, and Cheese, and Pickle she chose this time. Choose wisely she had.",
+            topic: "mitch",
+            username: "rogersop"
+          };
+          return request(app)
+            .post("/api/articles")
+            .send(article)
+            .expect(400)
+            .then(({ body }) => {
+              expect(body.msg).to.equal(
+                "You have missed a key(s) name in your POST body"
+              );
+            });
+        });
+        it("status: 400, should respond error message if key missing in body post", () => {
+          const article = {
+            title: "It Must Have Been Love",
+            text:
+              "Only time will tell if she made the right decision. She has a type, but this time, she searched beyond that. For too long had she been a slave to habit. This time she was going to do things a little differently. She eyeballed them each, taking her time, though she had not much of that. This was not a choice to be rushed. The perfect lunchtime hinged on this. Chicken and Bacon? Nah. Tuna and Sweetcorn? Nooo thank you. Egg and Onion?? Is that a joke? No, it was none of the above. It was Ham, and Cheese, and Pickle she chose this time. Choose wisely she had.",
+            topic: "mitch",
+            username: "rogersop"
+          };
+          return request(app)
+            .post("/api/articles")
+            .send(article)
+            .expect(400)
+            .then(({ body }) => {
+              expect(body.msg).to.equal(
+                "You have tried to use a column that doesn't exists"
+              );
+            });
+        });
+        it("status: 404, should respond error message if topic doesn't exist", () => {
+          const article = {
+            title: "It Must Have Been Love",
+            body:
+              "Only time will tell if she made the right decision. She has a type, but this time, she searched beyond that. For too long had she been a slave to habit. This time she was going to do things a little differently. She eyeballed them each, taking her time, though she had not much of that. This was not a choice to be rushed. The perfect lunchtime hinged on this. Chicken and Bacon? Nah. Tuna and Sweetcorn? Nooo thank you. Egg and Onion?? Is that a joke? No, it was none of the above. It was Ham, and Cheese, and Pickle she chose this time. Choose wisely she had.",
+            topic: "dinosaurs",
+            username: "rogersop"
+          };
+          return request(app)
+            .post("/api/articles")
+            .send(article)
+            .expect(404)
+            .then(({ body }) => {
+              expect(body.msg).to.equal('Key (topic)=(dinosaurs) is not present in table "topics".')
+              
+            });
+        });
+        it("status: 404, should respond error message if user doesn't exist", () => {
+          const article = {
+            title: "It Must Have Been Love",
+            body:
+              "Only time will tell if she made the right decision. She has a type, but this time, she searched beyond that. For too long had she been a slave to habit. This time she was going to do things a little differently. She eyeballed them each, taking her time, though she had not much of that. This was not a choice to be rushed. The perfect lunchtime hinged on this. Chicken and Bacon? Nah. Tuna and Sweetcorn? Nooo thank you. Egg and Onion?? Is that a joke? No, it was none of the above. It was Ham, and Cheese, and Pickle she chose this time. Choose wisely she had.",
+            topic: "mitch",
+            username: "sparkles"
+          };
+          return request(app)
+            .post("/api/articles")
+            .send(article)
+            .expect(404)
+            .then(({ body }) => {
+              console.log(body.msg)
+              expect(body.msg).to.equal('Key (author)=(sparkles) is not present in table "users".')
+              
+            });
+        });
       });
     });
     describe("INVALID METHODS", () => {
@@ -614,7 +788,7 @@ describe("/api", () => {
         .expect(400)
         .then(({ body }) => {
           expect(body.msg).to.equal(
-            "You have missed a key name in your POST body"
+            "You have missed a key(s) name in your POST body"
           );
         });
     });

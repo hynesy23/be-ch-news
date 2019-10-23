@@ -32,9 +32,12 @@ exports.getArticleById = (req, res, next) => {
 
 exports.postAnArticle = (req, res, next) => {
   const article = req.body;
-  insertAnArticle(article).then(([article]) => {
-    res.status(201).json({ article: article });
-  });
+  insertAnArticle(article)
+    .then(([article]) => {
+      console.log(article, "article log");
+      res.status(201).json({ article: article });
+    })
+    .catch(next);
 };
 
 exports.patchAnArticleById = (req, res, next) => {
