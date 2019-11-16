@@ -20,11 +20,9 @@ exports.getAllUsers = (req, res, next) => {
 };
 
 exports.addAUser = (req, res, next) => {
-  console.log("hi");
   const user = req.body;
   insertAUser(user)
     .then(([user]) => {
-      console.log(user);
       res.status(201).json({ user });
     })
     .catch(next);

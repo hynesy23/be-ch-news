@@ -1,8 +1,6 @@
 const connection = require("../connection");
-// const { fecthArticleById } = require("../models/articles-model");
 
 exports.insertACommentByArticleId = (comment, article_id) => {
-  console.log("CAN YOU SEEEE MEEEE !?!?!?!");
   const { ...controllerComment } = comment;
   controllerComment.author = controllerComment.username;
   delete controllerComment.username;
@@ -22,8 +20,6 @@ exports.insertACommentByArticleId = (comment, article_id) => {
 };
 
 exports.fetchCommentByArticleId = (article_id, sort_by, order) => {
-  console.log("CAN YOU SEEEE MEEEE !?!?!?!");
-
   return connection("comments")
     .select("*")
     .where({ article_id })
@@ -41,8 +37,6 @@ exports.fetchCommentByArticleId = (article_id, sort_by, order) => {
 };
 
 const checkIfArticleExists = article_id => {
-  console.log("CAN YOU SEEEE MEEEE !?!?!?!");
-
   return connection("articles")
     .select("*")
     .where({ article_id })
@@ -57,8 +51,6 @@ const checkIfArticleExists = article_id => {
 };
 
 exports.updateACommentById = (comment_id, inc_votes) => {
-  console.log("CAN YOU SEEEE MEEEE !?!?!?!");
-
   return connection("comments")
     .where({ comment_id })
     .increment("votes", inc_votes || 0)
@@ -74,8 +66,6 @@ exports.updateACommentById = (comment_id, inc_votes) => {
 };
 
 exports.removeCommentById = comment_id => {
-  console.log("CAN YOU SEEEE MEEEE !?!?!?!");
-
   return connection("comments")
     .where({ comment_id })
     .del()

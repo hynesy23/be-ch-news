@@ -34,7 +34,6 @@ exports.postAnArticle = (req, res, next) => {
   const article = req.body;
   insertAnArticle(article)
     .then(([article]) => {
-      console.log(article, "article log");
       res.status(201).json({ article: article });
     })
     .catch(next);

@@ -398,7 +398,6 @@ describe("/api", () => {
             .send(article)
             .expect(201)
             .then(({ body }) => {
-              console.log(body);
               expect(body.article).to.contain.keys(
                 "article_id",
                 "title",
@@ -479,7 +478,6 @@ describe("/api", () => {
             .send(article)
             .expect(404)
             .then(({ body }) => {
-              console.log(body.msg);
               expect(body.msg).to.equal(
                 'Key (author)=(sparkles) is not present in table "users".'
               );
