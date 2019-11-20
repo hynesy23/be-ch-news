@@ -32,18 +32,16 @@ And finally, you'll need to check if `git` is installed on your machine. To do t
 git --version
 ```
 
-> If you do not have git installed on your machine please follow [this guide](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
-
 ## Step 2 - Setting up Your Project
 
 # Installing
 
 After following the above steps, you will now be ready to install and run this application
 
-First, you will need to clone this repo. Do this by selecting your preferred directory on your local machne from the command line, and enter the follwing command:
+First, you will need to clone this repo. Do this by selecting your preferred directory on your local machine from the command line, and enter the follwing command:
 
 ```bash
-git clone https://github.com/steferguson/be-nc-news
+git clone https://github.com/hynesy23/be-ch-news
 ```
 
 Navigate inside the folder and install all dependencies by entering the following commands on your terminal window:
@@ -108,7 +106,7 @@ Tests were built using the following: `Mocha`, `Chai` and `Supertest`.
 
 ## Step 4 - API Routes
 
-In order to view all the endpoints available with this API, you can read `endpoints.json` or access `/api` either on the [live service](https://sf-be-news.herokuapp.com/api) or [localhost](http://localhost:9090/api) when you have the server running.
+In order to view all the endpoints available with this API, you can read `endpoints.json` or access `/api` either on the [live service](https://cillians-server.herokuapp.com/api) or [localhost](http://localhost:9090/api) when you have the server running.
 
 ## Built With
 
